@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"enklave/m/backend/common"
 	"net/http"
 	"strings"
 
@@ -22,14 +23,14 @@ func AuthMiddleware(verifier *oidc.IDTokenVerifier) func(*gin.Context) {
 
 		authHeader := c.GetHeader("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Missing cookie or invalid token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, common.ErrorResponse{Error: "Missing cookie or invalid token"})
 			return
 		}
 
 		rawToken := strings.TrimPrefix(authHeader, "Bearer ")
 		idToken, err := verifier.Verify(c.Request.Context(), rawToken)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, common.ErrorResponse{Error: "Invalid token"})
 			return
 		}
 
