@@ -1,33 +1,35 @@
-//go:generate swag init --parseDependency -g main.go -o ./docs
+//go:generate go run github.com/swaggo/swag/cmd/swag@latest init --parseDependency -g main.go -o ./docs
 
 package main
 
 import (
+	_ "embed"
 	_ "enklave/m/backend/common"
 	"enklave/m/backend/controllers"
-	_ "enklave/m/backend/docs"
 	"enklave/m/backend/middlewares"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title                      Enklave API
 // @version                    1.0
 // @description                Secure self-hosted document archival API
-// @host                       localhost:8080
 // @BasePath                   /
 
 // @securityDefinitions.apikey BearerAuth
 // @in                         header
 // @name                       Authorization
 // @description                Enter "Bearer " followed by your JWT token.
+
+//go:embed docs/swagger.json
+var swaggerSpec []byte
 
 // VaultResponse represents the response payload for vault access.
 type VaultResponse struct {
@@ -59,23 +61,34 @@ func main() {
 	}
 
 	r := gin.New()
-
 	r.Use(gin.Logger(), gin.Recovery())
 
 	store := cookie.NewStore([]byte("your-secret-key"))
 	r.Use(sessions.Sessions("mysession", store))
 
-	// Swagger documentation endpoint
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
+	// Auth routes (browser-only OAuth flow)
 	verifier := controllers.AuthController(r)
 
-	api := r.Group("/api")
+	// Serve the OpenAPI spec for clients
+	r.GET("/docs/openapi.json", func(c *gin.Context) {
+		c.Data(http.StatusOK, "application/json", swaggerSpec)
+	})
 
+	// Protected API routes
+	api := r.Group("/api")
 	api.Use(middlewares.AuthMiddleware(verifier))
 
 	api.GET("/vault", VaultHandler)
 
+	if gin.Mode() == "debug" {
+		// Serve frontend in dev
+		frontendURL, _ := url.Parse("http://localhost:3000")
+		proxy := httputil.NewSingleHostReverseProxy(frontendURL)
+
+		r.NoRoute(func(ctx *gin.Context) {
+			proxy.ServeHTTP(ctx.Writer, ctx.Request)
+		})
+	}
+
 	r.Run(":8080")
 }
-

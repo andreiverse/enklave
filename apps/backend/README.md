@@ -1,0 +1,5 @@
+## generating spec
+
+```
+go generate ./...
+```

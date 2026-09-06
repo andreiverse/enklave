@@ -24,7 +24,6 @@ definitions:
         example: auth0|1234567890
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
   description: Secure self-hosted document archival API
