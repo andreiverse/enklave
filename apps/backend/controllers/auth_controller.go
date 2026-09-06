@@ -18,10 +18,34 @@ type AuthCallbackResponse struct {
 	Sub     string `json:"sub" example:"auth0|1234567890"`
 }
 
+type ProfileResponse struct {
+	Sub string `json:"sub"`
+}
+
 // AuthHandler handles OIDC authentication routes.
 type AuthHandler struct {
 	oauth2Config oauth2.Config
 	verifier     *oidc.IDTokenVerifier
+}
+
+// Session godoc
+// @Summary		Shows current session
+// @Description	Provides info about the current user session
+// @Tags		auth
+// @Success		200 {object} ProfileResponse "Session information"
+// @Failure		404	{object} ErrorResponse "Lack of valid session"
+func (h *AuthHandler) Session(c *gin.Context) {
+	session := sessions.Default(c)
+	sessionSub, ok := session.Get("sub").(string)
+
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusNotFound, common.NewErrorResponse("Invalid session"))
+		return
+	}
+
+	c.JSON(http.StatusOK, ProfileResponse{
+		Sub: sessionSub,
+	})
 }
 
 // Login godoc

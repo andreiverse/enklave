@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "lint": "eslint",
     "format": "prettier --write . && eslint --fix",
-    "check": "prettier --check ."
+    "check": "prettier --check .",
+    "gen": "pnpx openapi-typescript ../backend/docs/openapi.json -o ./src/lib/api.gen.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

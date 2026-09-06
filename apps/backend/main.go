@@ -1,4 +1,5 @@
 //go:generate go run github.com/swaggo/swag/cmd/swag@latest init --parseDependency -g main.go -o ./docs
+//go:generate go run ./cmd/swagger2openapi -input docs/swagger.json -output docs/openapi.json
 
 package main
 
@@ -28,8 +29,8 @@ import (
 // @name                       Authorization
 // @description                Enter "Bearer " followed by your JWT token.
 
-//go:embed docs/swagger.json
-var swaggerSpec []byte
+//go:embed docs/openapi.json
+var openapiSpec []byte
 
 // VaultResponse represents the response payload for vault access.
 type VaultResponse struct {
@@ -71,7 +72,7 @@ func main() {
 
 	// Serve the OpenAPI spec for clients
 	r.GET("/docs/openapi.json", func(c *gin.Context) {
-		c.Data(http.StatusOK, "application/json", swaggerSpec)
+		c.Data(http.StatusOK, "application/json", openapiSpec)
 	})
 
 	// Protected API routes
