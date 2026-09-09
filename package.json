@@ -1,0 +1,5 @@
+{
+  "name": "enklave",
+  "private": true,
+  "workspaces": ["apps/*"]
+}
