@@ -4,10 +4,15 @@ import auth from './routers/auth.router';
 import { AppEnv, HonoSessionService } from './services/honoSession.service';
 import { SessionService } from './services/session.service';
 import { createOidcService, OidcService } from './services/oidc.service';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { UserService } from './services/user.service';
+
+const db = drizzle(process.env.POSTGRES_URL!);
 
 export const session = new SessionService();
 export const honoSession = new HonoSessionService(session);
 export const oidc = await createOidcService();
+export const userService = new UserService(db);
 
 const app = new Hono<AppEnv>()
   .use(cors())
