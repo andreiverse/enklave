@@ -1,11 +1,6 @@
 import { Context, Next } from "hono";
-import { SessionService } from "./session.service";
+import { Session, SessionService } from "./session.service";
 import { getCookie, setCookie } from "hono/cookie";
-
-type Session = {
-    userId: string;
-    createdAt: number;
-};
 
 export type AppEnv = {
     Variables: {
@@ -29,6 +24,7 @@ export class HonoSessionService {
         if (sessionId && await this.sessionService.exists(sessionId))
             c.set("sessionId", sessionId);
         else {
+            // require session on all endpoints
             const sessionId = await this.sessionService.create();
 
             setCookie(c, "__Session", sessionId, {

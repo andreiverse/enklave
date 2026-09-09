@@ -1,3 +1,4 @@
+import { randomUUIDv7 } from "bun";
 import { authorizationCodeGrant, buildAuthorizationUrl, calculatePKCECodeChallenge, ClientSecretBasic, ClientSecretPost, Configuration, discovery, randomPKCECodeVerifier, TokenEndpointResponse, TokenEndpointResponseHelpers } from "openid-client";
 
 export async function createOidcService() {
@@ -27,28 +28,35 @@ export class OidcService {
         });
     }
 
-    async authorizeUser(): Promise<URL> {
+    async authorizeUser(): Promise<{
+        redirectUrl: URL,
+        state: string
+    }> {
         let code_challenge: string =
             await calculatePKCECodeChallenge(this.code_verifier);
+        let state = randomUUIDv7();
 
         let parameters: Record<string, string> = {
             redirect_uri: "http://localhost:3001/api/auth/callback",
             scope: "openid profile email",
             code_challenge,
-            state: "test",
+            state,
             code_challenge_method: 'S256',
         }
 
-        return buildAuthorizationUrl(this.configuration, parameters);
+        return {
+            redirectUrl: buildAuthorizationUrl(this.configuration, parameters),
+            state
+        };
     }
 
-    async handleCallback(url: string): Promise<TokenEndpointResponse & TokenEndpointResponseHelpers> {
+    async handleCallback(url: string, expectedState: string): Promise<TokenEndpointResponse & TokenEndpointResponseHelpers> {
         return await authorizationCodeGrant(
             this.configuration,
             new URL(url),
             {
                 pkceCodeVerifier: this.code_verifier,
-                expectedState: "test"
+                expectedState
             },
             {
                 redirect_uri: "http://localhost:3001/api/auth/callback",

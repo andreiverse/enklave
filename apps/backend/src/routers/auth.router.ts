@@ -5,13 +5,38 @@ import { users } from "../db/schema";
 
 const auth = new Hono<AppEnv>()
     .get("session", async (c) => {
-        return c.json(await honoSession.getSession(c))
+        let session = await honoSession.getSession(c);
+        if (!session) {
+            return c.json({
+                error: "invalid session"
+            }, 501);
+        }
+
+        let { userId } = session;
+
+        return c.json({
+            userId
+        });
     })
     .get("oidc", async (c) => {
-        return c.redirect(await oidc.authorizeUser())
+        let { redirectUrl, state } = await oidc.authorizeUser();
+
+        await honoSession.updateSession(c, {
+            oidcState: state
+        });
+
+        return c.redirect(redirectUrl);
     })
     .get("callback", async (c) => {
-        let tokens = await oidc.handleCallback(c.req.url);
+        let session = await honoSession.getSession(c);
+
+        if (!session) {
+            return c.json({
+                error: "invalid session"
+            }, 501);
+        }
+
+        let tokens = await oidc.handleCallback(c.req.url, session.oidcState);
         let claims = tokens.claims();
 
         if (!claims) {
@@ -24,7 +49,7 @@ const auth = new Hono<AppEnv>()
 
         if (!email || typeof email != "string") {
             return c.json({
-                error: "missing email"
+                error: "missing email from claims"
             }, 501);
         }
 
