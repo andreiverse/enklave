@@ -1,42 +1,42 @@
-import { client } from '#/main'
-import { useDocumentsQuery, useSessionQuery } from '#/queries'
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { client } from '#/main';
+import { useDocumentsQuery, useSessionQuery } from '#/queries';
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
 
 export const Route = createFileRoute('/')({
   component: Home,
-})
+});
 
 function Home() {
-  const user = useSessionQuery()
-  const documents = useDocumentsQuery(!!user.data?.userId)
+  const user = useSessionQuery();
+  const documents = useDocumentsQuery(!!user.data?.userId);
 
-  const [fileName, setFileName] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [fileName, setFileName] = useState('');
+  const [file, setFile] = useState<File | null>(null);
 
   async function upload() {
-    if (!file) return
+    if (!file) return;
 
-    const formData = new FormData()
-    formData.append('fileName', fileName)
-    formData.append('file', file)
+    const formData = new FormData();
+    formData.append('fileName', fileName);
+    formData.append('file', file);
 
     const response = await client.api.documents.$post({
       form: {
         fileName,
         file,
       },
-    })
+    });
 
     if (!response.ok) {
-      console.error(await response.text())
-      return
+      console.error(await response.text());
+      return;
     }
 
-    setFileName('')
-    setFile(null)
+    setFileName('');
+    setFile(null);
 
-    await documents.refetch()
+    await documents.refetch();
   }
 
   return (
@@ -60,7 +60,7 @@ function Home() {
           <input
             type="file"
             onChange={(e) => {
-              setFile(e.target.files?.[0] ?? null)
+              setFile(e.target.files?.[0] ?? null);
             }}
           />
 
@@ -73,14 +73,14 @@ function Home() {
           onClick={async () => {
             const { redirectUrl } = await (
               await client.api.auth.oidc.$get()
-            ).json()
+            ).json();
 
-            window.location.href = redirectUrl
+            window.location.href = redirectUrl;
           }}
         >
           Login
         </button>
       )}
     </div>
-  )
+  );
 }

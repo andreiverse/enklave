@@ -6,7 +6,7 @@ import { client } from "./main";
 export const useDocumentsQuery = (enabled: boolean | undefined) => useQuery({
     queryKey: ["documents-info"],
     queryFn: async () => {
-        return await parseResponse(client.api.documents.$get())
+        return await parseResponse(client.api.documents.$get());
     },
     enabled 
 });
@@ -14,6 +14,6 @@ export const useDocumentsQuery = (enabled: boolean | undefined) => useQuery({
 export const useSessionQuery = () => useQuery({
     queryKey: ["session-info"],
     queryFn: async () => {
-        return await parseResponse(client.api.auth.session.$get())
+        return await parseResponse(client.api.auth.session.$get());
     }
 });
