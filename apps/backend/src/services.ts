@@ -5,6 +5,7 @@ import { HonoUserService } from './services/honoUser.service';
 import { createOidcService } from './services/oidc.service';
 import { SessionService } from './services/session.service';
 import { UserService } from './services/user.service';
+import { S3Service } from './services/s3.service';
 
 export const db = drizzle(process.env.POSTGRES_URL!);
 
@@ -14,3 +15,4 @@ export const oidc = await createOidcService();
 export const userService = new UserService(db);
 export const documentService = new DocumentService(db);
 export const honoUser = new HonoUserService(userService, honoSession);
+export const s3Service = new S3Service();

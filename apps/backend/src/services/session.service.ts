@@ -8,7 +8,7 @@ export type Session = {
 };
 
 export class SessionService {
-    private readonly client = new RedisClient("localhost:6379");
+    private readonly client = new RedisClient(process.env.REDIS_URL!);
     private readonly prefix = "enklave:session:";
     private readonly ttl = 60 * 60 * 24 * 30;
 
