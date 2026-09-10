@@ -1,5 +1,5 @@
 import { defineRelations } from "drizzle-orm";
-import { pgTable, uuid, unique, varchar, timestamp } from "drizzle-orm/pg-core"
+import { pgTable, uuid, unique, varchar, timestamp } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
 	id: uuid().primaryKey().defaultRandom().notNull(),
@@ -27,4 +27,4 @@ export const relations = defineRelations({ users, documents }, (r) => ({
 	users: {
 		documents: r.many.documents()
 	}
-}))
+}));

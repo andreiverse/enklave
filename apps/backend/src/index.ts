@@ -1,4 +1,4 @@
-import { Hono } from 'hono'
+import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import auth from './routers/auth.router';
 import document from './routers/document.router';

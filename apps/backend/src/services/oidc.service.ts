@@ -16,7 +16,7 @@ export async function createOidcService() {
 }
 
 export class OidcService {
-    code_verifier: string
+    private readonly code_verifier: string;
 
     constructor(
         private readonly configuration: Configuration
@@ -42,7 +42,7 @@ export class OidcService {
             code_challenge,
             state,
             code_challenge_method: 'S256',
-        }
+        };
 
         return {
             redirectUrl: buildAuthorizationUrl(this.configuration, parameters),
@@ -61,6 +61,6 @@ export class OidcService {
             {
                 redirect_uri: "http://localhost:3001/api/auth/callback",
             },
-        )
+        );
     }
 }

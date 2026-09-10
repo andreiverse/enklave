@@ -43,7 +43,7 @@ export class DocumentService {
             id: documentId,
             createdAt: currentDate,
             updatedAt: currentDate
-        }
+        };
 
         const s3Key = this.buildS3KeyFromDocument(document);
 
