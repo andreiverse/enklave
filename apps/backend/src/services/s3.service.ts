@@ -14,5 +14,16 @@ export class S3Service {
         this.s3client.file("test.json").write("hello world").then(console.log);
     }
 
+    async readFile(path: string): Promise<ArrayBuffer> {
+        return await this.s3client.file(path).arrayBuffer()
+    }
+
+    async writeFile(path: string, buffer: ArrayBuffer) {
+        await this.s3client.file(path).write(buffer);
+    }
+
+    async deleteFile(path: string) {
+        await this.s3client.delete(path);
+    }
 
 }

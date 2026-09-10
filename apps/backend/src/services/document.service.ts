@@ -1,12 +1,22 @@
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { documents } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { randomUUIDv7 } from "bun";
+import { S3Service } from "./s3.service";
+import { eq } from "drizzle-orm/sql";
 
 export class DocumentService {
     constructor(
-        private readonly db: NodePgDatabase
+        private readonly db: NodePgDatabase,
+        private readonly s3: S3Service
     ) {
 
+    }
+
+    async findDocumentById(id: string): Promise<null | typeof documents.$inferSelect> {
+        let results = await
+            this.db.select().from(documents).where(eq(documents.id, id));
+
+        return results.length > 0 ? results[0] : null;
     }
 
     async findDocumentsByOwner(ownerId: string): Promise<(typeof documents.$inferSelect)[]> {
@@ -16,14 +26,44 @@ export class DocumentService {
         return results;
     }
 
-    async createDocument(document: typeof documents.$inferInsert) {
-        let insert = await
-            this.db.insert(documents).values(document);
+    buildS3KeyFromDocument(document: typeof documents.$inferInsert) {
+        if (!document.id) throw new Error("can't construct document key with null id");
+        if (!document.ownerId) throw new Error("can't construct document key with null owner id");
 
-        if (insert.rowCount == 0) {
-            throw new Error("couldn't insert document: " + JSON.stringify(document));
+        return `documents/${document.ownerId}/${document.id}/original`;
+    }
+
+    async createDocument(doc: Pick<typeof documents.$inferInsert, 'fileName' | 'ownerId'>, buffer: ArrayBuffer) {
+        let documentId = randomUUIDv7();
+
+        let currentDate = new Date();
+
+        let document: typeof documents.$inferInsert = {
+            ...doc,
+            id: documentId,
+            createdAt: currentDate,
+            updatedAt: currentDate
         }
 
-        return insert.rows[0];
+        let s3Key = this.buildS3KeyFromDocument(document);
+
+        await this.s3.writeFile(s3Key, buffer);
+
+        try {
+            let [insert] = await
+                this.db.insert(documents).values(document).returning();
+
+            if (!insert) {
+                throw new Error("couldn't insert document: " + JSON.stringify(document));
+            }
+
+            return insert;
+        } catch (e) {
+            this.s3.deleteFile(s3Key).catch(e => {
+                console.error("Error deleting file after catching error", e);
+            }); 
+
+            throw e;            
+        }
     }
 }

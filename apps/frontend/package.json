@@ -15,12 +15,13 @@
     "check": "prettier --check ."
   },
   "dependencies": {
+    "@enklave/backend": "workspace:*",
     "@hono/client": "^0.0.3",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
+    "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-router": "latest",
     "@tanstack/react-router-devtools": "latest",
-    "@enklave/backend": "workspace:*",
     "hono": "^4.13.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

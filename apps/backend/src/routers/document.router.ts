@@ -1,14 +1,63 @@
 import { Hono } from "hono";
-import { documentService, honoUser } from '../services';
+import { documentService, honoUser, s3Service } from "../services";
+import { zValidator } from "@hono/zod-validator";
+import { z } from "zod";
+import { type } from "arktype";
+import { sValidator } from "@hono/standard-validator";
 
+const documentSchema = type({
+    fileName: "string",
+    file: "File",
+});
 
-export default new Hono()
+const documentRoutes = new Hono()
     .use(honoUser.middleware)
-    .get("", async (c) => {
-        let user = c.get("user");
 
-        return c.json(await documentService.findDocumentsByOwner(user.id));
+    .get("", async (c) => {
+        const user = c.get("user");
+
+        return c.json(
+            await documentService.findDocumentsByOwner(user.id)
+        );
     })
-    .post("", async (c) => {
-        
-    });
+
+    .get(
+        ":doc/original",
+        async (c) => {
+            const { doc } = c.req.param();
+
+            let user = c.get("user");
+            let document = await documentService.findDocumentById(doc);
+
+            if (!document || document.ownerId != user.id) {
+                return c.json({
+                    error: "couldn't find document"
+                }, 404);
+            }
+
+            let s3Key = documentService.buildS3KeyFromDocument(document);
+
+            return c.body(await s3Service.readFile(s3Key), 201);
+        }
+    )
+
+    .post(
+        "",
+        sValidator("form", documentSchema),
+        async (c) => {
+            const user = c.get("user");
+            const { fileName, file } = c.req.valid("form");
+
+            const document = await documentService.createDocument(
+                {
+                    fileName,
+                    ownerId: user.id,
+                },
+                await file.arrayBuffer()
+            );
+
+            return c.json(document, 201);
+        }
+    );
+
+export default documentRoutes;

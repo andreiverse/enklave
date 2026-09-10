@@ -1,6 +1,6 @@
 import { NodePgDatabase } from "drizzle-orm/node-postgres"
 import { users } from "../db/schema"
-import { eq } from "drizzle-orm"
+import { eq } from "drizzle-orm/sql";
 
 export class UserService {
     constructor(
