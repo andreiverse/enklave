@@ -1,6 +1,4 @@
 import { Context, Next } from "hono";
-import { Session, SessionService } from "./session.service";
-import { getCookie, setCookie } from "hono/cookie";
 import { UserService } from "./user.service";
 import { AppEnv, HonoSessionService } from "./honoSession.service";
 
@@ -16,7 +14,7 @@ export class HonoUserService {
         c: Context<AppEnv>,
         next: Next,
     ) {
-        let session = await this.honoSession.getSession(c);
+        const session = await this.honoSession.getSession(c);
        
         if (!session) {
             return c.json({
@@ -31,7 +29,7 @@ export class HonoUserService {
         }
 
 
-        let user = await this.userService.findUserById(session.userId);
+        const user = await this.userService.findUserById(session.userId);
 
         if (!user) {
             return c.json({

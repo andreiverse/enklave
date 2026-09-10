@@ -13,14 +13,14 @@ export class DocumentService {
     }
 
     async findDocumentById(id: string): Promise<null | typeof documents.$inferSelect> {
-        let results = await
+        const results = await
             this.db.select().from(documents).where(eq(documents.id, id));
 
         return results.length > 0 ? results[0] : null;
     }
 
     async findDocumentsByOwner(ownerId: string): Promise<(typeof documents.$inferSelect)[]> {
-        let results = await
+        const results = await
             this.db.select().from(documents).where(eq(documents.ownerId, ownerId));
 
         return results;
@@ -34,23 +34,23 @@ export class DocumentService {
     }
 
     async createDocument(doc: Pick<typeof documents.$inferInsert, 'fileName' | 'ownerId'>, buffer: ArrayBuffer) {
-        let documentId = randomUUIDv7();
+        const documentId = randomUUIDv7();
 
-        let currentDate = new Date();
+        const currentDate = new Date();
 
-        let document: typeof documents.$inferInsert = {
+        const document: typeof documents.$inferInsert = {
             ...doc,
             id: documentId,
             createdAt: currentDate,
             updatedAt: currentDate
         }
 
-        let s3Key = this.buildS3KeyFromDocument(document);
+        const s3Key = this.buildS3KeyFromDocument(document);
 
         await this.s3.writeFile(s3Key, buffer);
 
         try {
-            let [insert] = await
+            const [insert] = await
                 this.db.insert(documents).values(document).returning();
 
             if (!insert) {

@@ -1,5 +1,5 @@
 import { randomUUIDv7 } from "bun";
-import { authorizationCodeGrant, buildAuthorizationUrl, calculatePKCECodeChallenge, ClientSecretBasic, ClientSecretPost, Configuration, discovery, randomPKCECodeVerifier, TokenEndpointResponse, TokenEndpointResponseHelpers } from "openid-client";
+import { authorizationCodeGrant, buildAuthorizationUrl, calculatePKCECodeChallenge, ClientSecretBasic, Configuration, discovery, randomPKCECodeVerifier, TokenEndpointResponse, TokenEndpointResponseHelpers } from "openid-client";
 
 export async function createOidcService() {
     const clientId = process.env.OIDC_CLIENT_ID!;
@@ -32,11 +32,11 @@ export class OidcService {
         redirectUrl: URL,
         state: string
     }> {
-        let code_challenge: string =
+        const code_challenge: string =
             await calculatePKCECodeChallenge(this.code_verifier);
-        let state = randomUUIDv7();
+        const state = randomUUIDv7();
 
-        let parameters: Record<string, string> = {
+        const parameters: Record<string, string> = {
             redirect_uri: "http://localhost:3001/api/auth/callback",
             scope: "openid profile email",
             code_challenge,

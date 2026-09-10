@@ -1,7 +1,5 @@
 import { Hono } from "hono";
 import { documentService, honoUser, s3Service } from "../services";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
 import { type } from "arktype";
 import { sValidator } from "@hono/standard-validator";
 
@@ -26,8 +24,8 @@ const documentRoutes = new Hono()
         async (c) => {
             const { doc } = c.req.param();
 
-            let user = c.get("user");
-            let document = await documentService.findDocumentById(doc);
+            const user = c.get("user");
+            const document = await documentService.findDocumentById(doc);
 
             if (!document || document.ownerId != user.id) {
                 return c.json({
@@ -35,7 +33,7 @@ const documentRoutes = new Hono()
                 }, 404);
             }
 
-            let s3Key = documentService.buildS3KeyFromDocument(document);
+            const s3Key = documentService.buildS3KeyFromDocument(document);
 
             return c.body(await s3Service.readFile(s3Key), 201);
         }

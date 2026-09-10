@@ -8,13 +8,13 @@ export class UserService {
     ) { }
 
     async findUserByEmail(email: string) {
-        let user = await this.db.select().from(users).where(eq(users.email, email));
+        const user = await this.db.select().from(users).where(eq(users.email, email));
 
         return user.length > 0 ? user[0] : null;
     }
 
     async findUserById(id: string) {
-        let user = await this.db.select().from(users).where(eq(users.id, id));
+        const user = await this.db.select().from(users).where(eq(users.id, id));
 
         return user.length > 0 ? user[0] : null;
     }

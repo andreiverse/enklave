@@ -4,21 +4,22 @@ import { honoSession, oidc, userService } from '../services';
 
 export default new Hono<AppEnv>()
     .get("session", async (c) => {
-        let session = await honoSession.getSession(c);
+        const session = await honoSession.getSession(c);
         if (!session) {
             return c.json({
                 error: "invalid session"
             }, 501);
         }
 
-        let { userId } = session;
+        const { userId } = session;
 
         return c.json({
             userId
         });
     })
+
     .get("oidc", async (c) => {
-        let { redirectUrl, state } = await oidc.authorizeUser();
+        const { redirectUrl, state } = await oidc.authorizeUser();
 
         await honoSession.updateSession(c, {
             oidcState: state
@@ -28,8 +29,9 @@ export default new Hono<AppEnv>()
             redirectUrl
         });
     })
+
     .get("callback", async (c) => {
-        let session = await honoSession.getSession(c);
+        const session = await honoSession.getSession(c);
 
         if (!session || !session.oidcState) {
             return c.json({
@@ -39,8 +41,8 @@ export default new Hono<AppEnv>()
 
         console.log(session);
 
-        let tokens = await oidc.handleCallback(c.req.url, session.oidcState);
-        let claims = tokens.claims();
+        const tokens = await oidc.handleCallback(c.req.url, session.oidcState);
+        const claims = tokens.claims();
 
         if (!claims) {
             return c.json({
@@ -48,7 +50,7 @@ export default new Hono<AppEnv>()
             }, 501);
         }
 
-        let email = claims["email"];
+        const email = claims["email"];
 
         if (!email || typeof email != "string") {
             return c.json({
@@ -76,4 +78,4 @@ export default new Hono<AppEnv>()
         });
 
         return c.json(user, 200);
-    })
+    });
