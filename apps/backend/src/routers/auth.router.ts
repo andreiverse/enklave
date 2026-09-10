@@ -1,9 +1,8 @@
 import { Hono } from "hono";
 import { AppEnv } from "../services/honoSession.service";
-import { honoSession, oidc, userService } from "..";
-import { users } from "../db/schema";
+import { honoSession, oidc, userService } from '../services';
 
-const auth = new Hono<AppEnv>()
+export default new Hono<AppEnv>()
     .get("session", async (c) => {
         let session = await honoSession.getSession(c);
         if (!session) {
@@ -25,16 +24,20 @@ const auth = new Hono<AppEnv>()
             oidcState: state
         });
 
-        return c.redirect(redirectUrl);
+        return c.json({
+            redirectUrl
+        });
     })
     .get("callback", async (c) => {
         let session = await honoSession.getSession(c);
 
-        if (!session) {
+        if (!session || !session.oidcState) {
             return c.json({
                 error: "invalid session"
             }, 501);
         }
+
+        console.log(session);
 
         let tokens = await oidc.handleCallback(c.req.url, session.oidcState);
         let claims = tokens.claims();
@@ -74,5 +77,3 @@ const auth = new Hono<AppEnv>()
 
         return c.json(user, 200);
     })
-
-export default auth;

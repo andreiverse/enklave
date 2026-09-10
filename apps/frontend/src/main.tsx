@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
-
+import { hc } from 'hono/client'
 import type { AppType } from '@enklave/backend';
 
 const router = createRouter({
@@ -10,9 +10,7 @@ const router = createRouter({
   scrollRestoration: true,
 })
 
-import {hc} from 'hono/client'
-
-export const client = hc<AppType>('http://localhost:3000/');
+export const client = hc<AppType>('http://localhost:3001/');
 
 declare module '@tanstack/react-router' {
   interface Register {

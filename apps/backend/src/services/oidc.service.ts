@@ -21,7 +21,7 @@ export class OidcService {
     constructor(
         private readonly configuration: Configuration
     ) {
-        this.code_verifier = randomPKCECodeVerifier(); // generate per request and store in session
+        this.code_verifier = randomPKCECodeVerifier(); 
         console.log({
             issuer: this.configuration.serverMetadata().issuer,
             tokenEndpoint: this.configuration.serverMetadata().token_endpoint,

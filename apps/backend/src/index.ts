@@ -1,23 +1,17 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors';
 import auth from './routers/auth.router';
-import { AppEnv, HonoSessionService } from './services/honoSession.service';
-import { SessionService } from './services/session.service';
-import { createOidcService, OidcService } from './services/oidc.service';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { UserService } from './services/user.service';
-
-const db = drizzle(process.env.POSTGRES_URL!);
-
-export const session = new SessionService();
-export const honoSession = new HonoSessionService(session);
-export const oidc = await createOidcService();
-export const userService = new UserService(db);
+import document from './routers/document.router';
+import { AppEnv } from './services/honoSession.service';
+import { honoSession } from './services';
+import { logger } from 'hono/logger';
 
 const app = new Hono<AppEnv>()
+  .use(logger())
   .use(cors())
   .use(honoSession.middleware)
-  .route("api/auth", auth);
+  .route("api/auth", auth)
+  .route("api/documents", document);
 
 export type AppType = typeof app
 export default app;

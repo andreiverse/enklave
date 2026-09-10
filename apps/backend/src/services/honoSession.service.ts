@@ -1,14 +1,18 @@
 import { Context, Next } from "hono";
 import { Session, SessionService } from "./session.service";
 import { getCookie, setCookie } from "hono/cookie";
+import { users } from "../db/schema";
 
 export type AppEnv = {
     Variables: {
         sessionId: string;
+        user: typeof users.$inferSelect
     };
 };
 
 export class HonoSessionService {
+    cookieName = "__Session"
+
     constructor(
         private readonly sessionService: SessionService,
     ) {
@@ -19,7 +23,7 @@ export class HonoSessionService {
         c: Context<AppEnv>,
         next: Next,
     ) {
-        const sessionId = getCookie(c, "__Session");
+        const sessionId = getCookie(c, this.cookieName);
 
         if (sessionId && await this.sessionService.exists(sessionId))
             c.set("sessionId", sessionId);
@@ -27,7 +31,7 @@ export class HonoSessionService {
             // require session on all endpoints
             const sessionId = await this.sessionService.create();
 
-            setCookie(c, "__Session", sessionId, {
+            setCookie(c, this.cookieName, sessionId, {
                 httpOnly: true,
                 secure: true,
                 sameSite: "Lax",

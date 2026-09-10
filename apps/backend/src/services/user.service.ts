@@ -13,6 +13,12 @@ export class UserService {
         return user.length > 0 ? user[0] : null;
     }
 
+    async findUserById(id: string) {
+        let user = await this.db.select().from(users).where(eq(users.id, id));
+
+        return user.length > 0 ? user[0] : null;
+    }
+    
     async createUser(user: typeof users.$inferInsert) {
         return await this.db.insert(users).values(user);
     }

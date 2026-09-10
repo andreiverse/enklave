@@ -9,11 +9,13 @@ function Home() {
       <h1 className="text-4xl font-bold">Welcome to TanStack Start</h1>
       <button
         onClick={async () => {
-          await client.auth.test.$get();
+          let { redirectUrl } = await (await client.api.auth.oidc.$get()).json();
+
+          window.location = redirectUrl as any;
         }}
       >
-        salut  
-      </button> 
+        Login
+      </button>
     </div>
   )
 }

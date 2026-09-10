@@ -2,7 +2,7 @@ import { randomUUIDv7, RedisClient } from "bun";
 
 export type Session = {
     userId: string | null;
-    oidcState: string;
+    oidcState: string | null;
     createdAt: number;
     lastSeenAt: number;
 };
@@ -23,7 +23,7 @@ export class SessionService {
         const id = randomUUIDv7();
 
         const session: Session = {
-            userId: null, oidcState: randomUUIDv7(), // temporary value
+            userId: null, oidcState: null,
             createdAt: Date.now(),
             lastSeenAt: Date.now(),
         };
