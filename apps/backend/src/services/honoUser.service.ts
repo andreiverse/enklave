@@ -1,6 +1,7 @@
 import { Context, Next } from "hono";
 import { UserService } from "./user.service";
 import { AppEnv, HonoSessionService } from "./honoSession.service";
+import { AppException } from "../exception/AppException";
 
 export class HonoUserService {
     constructor(
@@ -17,24 +18,17 @@ export class HonoUserService {
         const session = await this.honoSession.getSession(c);
        
         if (!session) {
-            return c.json({
-                error: "invalid session"
-            }, 501);
+            throw new AppException(401, "Invalid session");
         } 
 
         if (!session.userId) {
-            return c.json({
-                error: "unauthenticated"
-            }, 402);
+            throw new AppException(401, "Unauthenticated");
         }
-
 
         const user = await this.userService.findUserById(session.userId);
 
         if (!user) {
-            return c.json({
-                error: "invalid authenticated user"
-            }, 501);
+            throw new AppException(401, "Invalid authenticated user");
         }
 
         c.set("user", user);

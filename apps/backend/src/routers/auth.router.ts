@@ -1,14 +1,13 @@
 import { Hono } from "hono";
 import { AppEnv } from "../services/honoSession.service";
 import { honoSession, oidc, userService } from '../services';
+import { AppException } from "../exception/AppException";
 
 export default new Hono<AppEnv>()
     .get("session", async (c) => {
         const session = await honoSession.getSession(c);
         if (!session) {
-            return c.json({
-                error: "invalid session"
-            }, 501);
+            throw new AppException(401, "Invalid session");
         }
 
         const { userId } = session;
@@ -34,9 +33,7 @@ export default new Hono<AppEnv>()
         const session = await honoSession.getSession(c);
 
         if (!session || !session.oidcState) {
-            return c.json({
-                error: "invalid session"
-            }, 501);
+            throw new AppException(401, "Invalid session");
         }
 
         console.log(session);
@@ -45,17 +42,13 @@ export default new Hono<AppEnv>()
         const claims = tokens.claims();
 
         if (!claims) {
-            return c.json({
-                error: "couldn't get claims"
-            }, 501);
+            throw new AppException(500, "Couldn't get claims");
         }
 
         const email = claims["email"];
 
         if (!email || typeof email != "string") {
-            return c.json({
-                error: "missing email from claims"
-            }, 501);
+            throw new AppException(500, "Missing email from claims");
         }
 
         let user = await userService.findUserByEmail(email);
@@ -68,9 +61,7 @@ export default new Hono<AppEnv>()
         }
 
         if (!user) {
-            return c.json({
-                error: "failed to create user"
-            }, 501);
+            throw new AppException(500, "Failed to create user");
         }
 
         await honoSession.updateSession(c, {
